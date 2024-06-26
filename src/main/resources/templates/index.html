@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card-column {
+            background-color: #ffffff;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .order-card {
+            background-color: #e9ecef;
+            margin: 10px 0;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .btn-custom {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+        .btn-custom:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div id="newOrdersColumn" class="card card-column">
+                <div class="card-header bg-primary text-white">
+                    <h4>New Orders</h4>
+                </div>
+                <div class="card-body">
+                    <div th:each="order : ${orders}">
+                        <div th:if="${order.status.toString()} == 'NEW'" class="card order-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Order ID: <span th:text="${order.id}"></span></h5>
+                                <p class="card-text">Date: <span th:text="${order.date}"></span></p>
+                                <p class="card-text">User: <span th:text="${order.telegramUser.firstname}"></span></p>
+                                <a th:href="'/orders/info/' + ${order.id}" class="btn btn-custom">Full Info</a>
+                                <div class="mt-2">
+                                    <a th:href="'/orders/move/left/' + ${order.id}">
+                                        <button class="btn btn-light btn-sm">←</button>
+                                    </a>
+                                    <a th:href="'/orders/move/right/' + ${order.id}">
+                                        <button class="btn btn-light btn-sm">→</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div id="inProgressOrdersColumn" class="card card-column">
+                <div class="card-header bg-primary text-white">
+                    <h4>In Progress Orders</h4>
+                </div>
+                <div class="card-body">
+                    <div th:each="order : ${orders}">
+                        <div th:if="${order.status.toString()} == 'IN_PROGRESS'" class="card order-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Order ID: <span th:text="${order.id}"></span></h5>
+                                <p class="card-text">Date: <span th:text="${order.date}"></span></p>
+                                <p class="card-text">User: <span th:text="${order.telegramUser.firstname}"></span></p>
+                                <a th:href="'/orders/info/' + ${order.id}" class="btn btn-custom">Full Info</a>
+                                <div class="mt-2">
+                                    <a th:href="'/orders/move/left/' + ${order.id}">
+                                        <button class="btn btn-light btn-sm">←</button>
+                                    </a>
+                                    <a th:href="'/orders/move/right/' + ${order.id}">
+                                        <button class="btn btn-light btn-sm">→</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End of In Progress Orders -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div id="completedOrdersColumn" class="card card-column">
+                <div class="card-header bg-primary text-white">
+                    <h4>Completed Orders</h4>
+                </div>
+                <div class="card-body">
+                    <div th:each="order : ${orders}">
+                        <div th:if="${order.status.toString()} == 'COMPLETED'" class="card order-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Order ID: <span th:text="${order.id}"></span></h5>
+                                <p class="card-text">Date: <span th:text="${order.date}"></span></p>
+                                <p class="card-text">User: <span th:text="${order.telegramUser.firstname}"></span></p>
+                                <a th:href="'/orders/info/' + ${order.id}" class="btn btn-custom">Full Info</a>
+                                <div class="mt-2">
+                                    <a th:href="'/orders/move/left/' + ${order.id}">
+                                        <button class="btn btn-light btn-sm">←</button>
+                                    </a>
+                                    <a th:href="'/orders/move/right/' + ${order.id}">
+                                        <button class="btn btn-light btn-sm">→</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@5.4.6/bundles/stomp.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script>
+    var stompClient = null;
+    var socket = new SockJS('http://localhost:8080/ws'); // WebSocket endpoint
+
+    function connect() {
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            stompClient.subscribe('/topic/farangiz', function(msg) {
+                var order = JSON.parse(msg.body);
+                console.log('New order received:', order);
+                updateOrderUI(order);
+            });
+        });
+    }
+
+    function updateOrderUI(order) {
+        var columnId = '';
+        switch (order.status) {
+            case 'NEW':
+                columnId = 'newOrdersColumn';
+                break;
+            case 'IN_PROGRESS':
+                columnId = 'inProgressOrdersColumn';
+                break;
+            case 'COMPLETED':
+                columnId = 'completedOrdersColumn';
+                break;
+            default:
+                break;
+        }
+
+        var orderHtml = `
+        <div class="card order-card">
+            <div class="card-body">
+                <h5 class="card-title">Order ID: ${order.id}</h5>
+                <p class="card-text">Date: ${order.date}</p>
+                <p class="card-text">User: ${order.telegramUser.firstname}</p>
+                <a href="/orders/info/${order.id}" class="btn btn-custom">Full Info</a>
+                <div class="mt-2">
+                    <a href="/orders/move/left/${order.id}">
+                        <button class="btn btn-light btn-sm">←</button>
+                    </a>
+                    <a href="/orders/move/right/${order.id}">
+                        <button class="btn btn-light btn-sm">→</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
+
+        $('#' + columnId + ' .card-body').prepend(orderHtml);
+    }
+
+    connect();
+</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Info</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .status-new { color: #007bff; }
+        .status-in-progress { color: #ffc107; }
+        .status-completed { color: #28a745; }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Order Details</h4>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Order ID: <span th:text="${order.id}"></span></h5>
+            <p class="card-text">Date: <span th:text="${formattedDate}"></span></p>
+            <p class="card-text">User: <span th:text="${order.telegramUser.firstname}"></span></p>
+            <p class="card-text">Status:
+                <span th:text="${order.status}" th:classappend=" 'status-' + ${order.status.name().toLowerCase()}">
+                        <!-- Status will be dynamically displayed and colored -->
+                    </span>
+            </p>
+
+            <h5>Products</h5>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Amount</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="orderProduct : ${orderProducts}">
+                    <td th:text="${orderProduct.product.name}"></td>
+                    <td th:text="${orderProduct.product.category.name}"></td>
+                    <td th:text="${orderProduct.product.price}"></td>
+                    <td th:text="${orderProduct.amount}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-right">
+            <a th:href="@{'/'}" class="btn btn-primary">Back to Orders</a>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
