@@ -18,4 +18,5 @@ public interface BotConstant {
     String ORDER = "ORDER";
 
     String MAKE_ORDER = "MAKE_ORDER";
+    String BACK_TO_MAIN_MENU = "Back to Main Menu";
 }

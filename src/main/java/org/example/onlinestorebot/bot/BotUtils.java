@@ -16,9 +16,9 @@ public class BotUtils {
 
     public static InlineKeyboardMarkup getWelcomeOptionButtons() {
         return new InlineKeyboardMarkup(
-                new InlineKeyboardButton("shop").callbackData(BotConstant.SHOP),
-                new InlineKeyboardButton("my cart").callbackData(BotConstant.CART),
-                new InlineKeyboardButton("my orders").callbackData(BotConstant.ORDERS)
+                new InlineKeyboardButton("shop \uD83D\uDECD").callbackData(BotConstant.SHOP),
+                new InlineKeyboardButton("my cart \uD83D\uDED2").callbackData(BotConstant.CART),
+                new InlineKeyboardButton("my orders \uD83D\uDDD2").callbackData(BotConstant.ORDERS)
                 );
     }
 
@@ -55,7 +55,7 @@ public class BotUtils {
                 new InlineKeyboardButton("-").callbackData(BotConstant.MINUS),
                 new InlineKeyboardButton(String.valueOf(currentBasketProduct.getAmount())).callbackData(BotConstant.COUNTER),
                 new InlineKeyboardButton("+").callbackData(BotConstant.PLUS),
-                new InlineKeyboardButton("Add to Cart").callbackData(BotConstant.ADD_TO_CART)
+                new InlineKeyboardButton("\uD83D\uDED2").callbackData(BotConstant.ADD_TO_CART)
         );
     }
 

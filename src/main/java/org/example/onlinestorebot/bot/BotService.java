@@ -32,33 +32,40 @@ import java.util.List;
 public class BotService {
 
     private final TelegramBot telegramBot;
-    private final CategoryRepository categoryRepository;
-    private final TelegramUserService telegramUserService;
-    private final ProductRepository productRepository;
-    private final BasketRepository basketRepository;
-    private final TelegramUserRepository telegramUserRepository;
-    private BasketProduct currentBasketProduct;
     private final SimpMessagingTemplate messagingTemplate;
 
-    private Product currentProduct;
+    private final TelegramUserService telegramUserService;
+
     private final BasketProductRepository basketProductRepository;
-    private final OrderRepository orderRepository;
+    private final TelegramUserRepository telegramUserRepository;
     private final OrderProductRepository orderProductRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
+    private final BasketRepository basketRepository;
+    private final OrderRepository orderRepository;
+
+    private BasketProduct currentBasketProduct;
+    private Product currentProduct;
+
     public Integer counterMessageId;
     public Integer cartMessageId;
+
 
     @Async
     public void handleUpdate(Update update) {
         if (update.message() != null) {
+
             Message message = update.message();
             Long chatId = message.chat().id();
+
             TelegramUser telegramUser = telegramUserService.getUser(chatId);
             telegramUserService.currentTelegramUser = telegramUser;
+
             if (message.text() != null) {
                 if (message.text().equals("/start")) {
                     acceptStartAskForContact(telegramUser, message);
                     checkForBasketPresence(telegramUser);
-                } else if (message.text().equals("Back to Main Menu")) {
+                } else if (message.text().equals(BotConstant.BACK_TO_MAIN_MENU)) {
                     telegramUser.setTelegramState(TelegramState.MAIN_MENU);
                     SendMessage sendMessage = new SendMessage(
                             telegramUser.getChatId(),
@@ -111,15 +118,19 @@ public class BotService {
                 }
             } else if (telegramUser.checkState(TelegramState.PRODUCT_OPTIONS)) {
                 if (callbackQuery.data().equals(BotConstant.PLUS)) {
+
                     currentBasketProduct.setAmount(currentBasketProduct.getAmount() + 1);
                     basketProductRepository.save(currentBasketProduct);
                     updateMessageInlineKeyboard(chatId, counterMessageId);
+
                 } else if (callbackQuery.data().equals(BotConstant.MINUS)) {
+
                     if (currentBasketProduct.getAmount() - 1 >= 0) {
                         currentBasketProduct.setAmount(currentBasketProduct.getAmount() - 1);
                         basketProductRepository.save(currentBasketProduct);
                         updateMessageInlineKeyboard(chatId, counterMessageId);
                     }
+
                 } else if (callbackQuery.data().equals(BotConstant.ADD_TO_CART)) {
                     if (currentBasketProduct.getAmount() > 0) {
                         basketProductRepository.save(currentBasketProduct);
@@ -215,17 +226,33 @@ public class BotService {
         Basket basket = telegramUser.getBasket();
         List<BasketProduct> basketProducts = basketProductRepository.findBasketProductByBasket(basket);
 
+        double totalPrice = 0;
+
         for (BasketProduct basketProduct : basketProducts) {
-            str.append(basketProduct.getProduct().getName()).append(": ").append(basketProduct.getProduct().getPrice()).append("$ x ").append(basketProduct.getAmount()).append(" = ").append(basketProduct.getAmount() * basketProduct.getProduct().getPrice()).append("\n");
+            double productTotalPrice = basketProduct.getAmount() * basketProduct.getProduct().getPrice();
+            totalPrice += productTotalPrice;
+            str.append(basketProduct.getProduct().getName())
+                    .append(": ")
+                    .append(basketProduct.getProduct().getPrice())
+                    .append("$ x ")
+                    .append(basketProduct.getAmount())
+                    .append(" = ")
+                    .append(productTotalPrice)
+                    .append("\n");
         }
+
+        str.append("\nTotal Price: ").append(totalPrice).append("$");
+
         SendMessage sendMessage = new SendMessage(
                 telegramUser.getChatId(),
                 str.toString()
         );
+
         sendMessage.replyMarkup(BotUtils.generateCartProductButtons(basketProducts));
         telegramUserService.updateState(TelegramState.CHOOSE_CART_OPTIONS, telegramUser);
         SendResponse sendResponse = telegramBot.execute(sendMessage);
         cartMessageId = sendResponse.message().messageId();
+
     }
 
     private void checkForBasketPresence(TelegramUser telegramUser) {
