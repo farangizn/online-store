@@ -99,9 +99,28 @@ public class BotService {
                 if (callbackQuery.data().equals(BotConstant.SHOP)) {
                     showCategories(callbackQuery, telegramUser);
                 } else if (callbackQuery.data().equals(BotConstant.ORDERS)) {
-                    showOrders(telegramUser);
+                    if (!orderRepository.findOrdersByTelegramUser(telegramUser).isEmpty()) {
+                        showOrders(telegramUser);
+                    } else {
+                        SendMessage sendMessage = new SendMessage(
+                                telegramUser.getChatId(),
+                                "You have no orders"
+                        );
+                        telegramBot.execute(sendMessage);
+//                        telegramUserRepository.save(telegramUser);
+                        telegramUserService.updateState(TelegramState.MAIN_MENU, telegramUser);
+                    }
                 }  else if (callbackQuery.data().equals(BotConstant.CART)) {
-                    showCart(telegramUser);
+                    if (!basketProductRepository.findBasketProductByBasket(telegramUser.getBasket()).isEmpty()) {
+                        showCart(telegramUser);
+                    } else {
+                        SendMessage sendMessage = new SendMessage(
+                                telegramUser.getChatId(),
+                                "Your cart is empty"
+                        );
+                        telegramBot.execute(sendMessage);
+                        telegramUserService.updateState(TelegramState.MAIN_MENU, telegramUser);
+                    }
                 }
             } else if (telegramUser.checkState(TelegramState.CHOOSE_CATEGORY)) {
                 for (Category category : categoryRepository.findAll()) {

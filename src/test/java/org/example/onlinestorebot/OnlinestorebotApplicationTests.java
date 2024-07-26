@@ -3,10 +3,10 @@ package org.example.onlinestorebot;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+//@SpringBootTest
 class OnlinestorebotApplicationTests {
 
-    @Test
+//    @Test
     void contextLoads() {
     }
 

@@ -23,8 +23,8 @@ public class Order {
 
     private LocalDateTime date;
 
-    @ManyToMany
-    private List<Product> products;
+//    @ManyToMany
+//    private List<Product> products;
 
     @Enumerated(EnumType.STRING)
     private Status status;
